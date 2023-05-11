@@ -1,0 +1,63 @@
+setBatchMode("hide");
+#@ File (style="Directory") Input //asks for an input directory
+#@ String (label="Enter results name", description="Results file name") name
+excel=Input+"/"+name
+filelist = getFileList(Input);
+run("Set Measurements...", "area mean stack redirect=None decimal=3");
+for (i = 0; i < lengthOf(filelist); i++) {
+    if (endsWith(filelist[i], ".tif")) { 
+    	file=Input + File.separator + filelist[i];
+        open(file);
+		RUSH(file);
+		run("Read and Write Excel", "stack_results file=["+excel+"_results.xlsx], file_mode=[read_and_open]");
+		run("Read and Write Excel", "no_count_column file_mode=[queue_write], dataset_label=[RUSH]");
+		run("Clear Results");
+		roiManager("reset");
+		background(file);
+		run("Read and Write Excel", "no_count_column file_mode=[queue_write], dataset_label=[Background]");
+		run("Read and Write Excel", "file_mode=[write_and_close]");
+		run("Close All");
+		close("results");
+		close("Log");
+		roiManager("reset");
+		close("*");	
+		
+    }}
+    
+function RUSH(Input) {
+run("Split Channels");
+run("Set Measurements...", "area mean stack display redirect=None decimal=3");
+roiManager("reset");
+selectImage(1); //image 1 here is the golgi channel, change depending on your image stack.
+getSliceNumber();
+ for (n=1; n<=nSlices; n++) {
+  setSlice(n);
+	setAutoThreshold("MaxEntropy dark");
+	run("Create Selection");
+	roiManager("Add");
+}
+selectImage(2); //image 2 here is the RUSH channel, change depending on your image stack.
+n = roiManager('count');
+for (i = 0; i < n; i++) {
+    roiManager('select', i);
+    roiManager("Measure");
+}
+}
+
+function background(Input){
+selectImage(2); //image 2 here is the RUSH channel, change depending on your image stack.
+run("Duplicate...", "duplicate");
+run("Convert to Mask", "method=Percentile background=Light calculate");		//This uses automated thresholding with the percentile algorithim to detect background pixels and measure their average intensity in each frame.
+for (n=1; n<=nSlices; n++) {
+  setSlice(n);
+  run("Create Selection");
+  roiManager("Add");
+}
+close();
+selectImage(2); //image 2 here is the RUSH channel, change depending on your image stack.
+n = roiManager('count');
+for (i = 0; i < n; i++) {
+    roiManager('select', i);
+    roiManager("Measure");
+}
+}
