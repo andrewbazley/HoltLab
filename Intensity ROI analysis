@@ -1,3 +1,10 @@
+//NOTE: You need to install the Read and Write Excel plugin for this macro to work, download this under the Fiji update sites.
+
+//this macro was written to analyze a folder of .nd2 files, where each file is a time-course movie of a RUSH protein and a Golgi marker.
+//From each time point, it creates an ROI using the golgi fluorescence and measures average fluorescence intensity in that ROI in the RUSH channel, then saves these resuls as a .csv.
+//when you're using this script, change the (1) or (2) in lines 17 and 25 so that they match the channels for golgi and RUSH fluorescence in your movies.
+// EXAMPLE: You open an .nd2 file where the the RUSH fluorescence is in channel 1 (appears first) and golgi fluorescence is in channel 2. Line 17 = 2, line 25=1.
+
 setBatchMode("hide");
 #@ File (style="Directory") Input //asks for an input directory
 #@ String (label="Enter results name", description="Results file name") name
